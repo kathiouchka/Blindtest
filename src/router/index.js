@@ -26,6 +26,7 @@ const routes = [
         name: 'GuessGame',
         component: GuessGameView
     }
+
 ]
 
 const router = createRouter({

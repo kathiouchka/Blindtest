@@ -1,10 +1,9 @@
-<!-- src/views/GuessGame.vue -->
 <template>
     <div class="guess-game">
         <h1>Guess the Song</h1>
-        <p v-if="!tracks">Please load a playlist first.</p>
+        <p v-if="!track">Please load a playlist first.</p>
         <div v-else>
-            <track-guess-item v-for="track in tracks" :key="track.id" :track="track" />
+            <track-guess-item :track="track" />
         </div>
     </div>
 </template>
@@ -18,8 +17,9 @@ export default {
         TrackGuessItem
     },
     computed: {
-        tracks() {
-            return this.$store.state.tracks;
+        track() {
+            const index = Math.floor(Math.random() * this.$store.state.tracks.length);
+            return this.$store.state.tracks[index];
         }
     }
 };
