@@ -3,10 +3,11 @@
         <h1>Guess the Song</h1>
         <p v-if="!track">Please load a playlist first.</p>
         <div v-else>
-            <track-guess-item :track="track" />
+            <track-guess-item :track="track" @nextTrack="nextTrack" />
         </div>
     </div>
 </template>
+  
   
 <script>
 import TrackGuessItem from '../components/TrackGuessItem.vue';
@@ -16,10 +17,16 @@ export default {
     components: {
         TrackGuessItem
     },
+    methods: {
+        nextTrack() {
+            this.$store.commit('nextTrack');
+        },
+    },
     computed: {
         track() {
-            const index = Math.floor(Math.random() * this.$store.state.tracks.length);
-            return this.$store.state.tracks[index];
+            // const index = Math.floor(Math.random() * this.$store.state.tracks.length);
+            // return this.$store.state.tracks[index];
+            return this.$store.state.tracks[this.$store.state.currentTrackIndex];
         }
     }
 };

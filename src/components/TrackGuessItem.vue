@@ -1,19 +1,21 @@
 <!-- src/components/TrackGuessItem.vue -->
 <template>
     <div class="track-guess-item">
-        <img :src="track.album.images[0].url" :alt="track.name" />
-        <div v-if="!isCorrect">
-            <input v-model="guess" placeholder="Enter song title and artist" />
-            <button @click="checkGuess">Submit</button>
+        <!-- Other elements... -->
+        <div v-if="!songCorrect && !artistCorrect">
+            <input v-model="songGuess" placeholder="Enter song title" @keyup.enter="checkGuess('song')" />
+            <input v-model="artistGuess" placeholder="Enter artist name" @keyup.enter="checkGuess('artist')" />
             <p class="error" v-if="error">{{ error }}</p>
         </div>
         <div v-else>
             <h3>{{ track.name }}</h3>
             <p>{{ track.artists.map(artist => artist.name).join(', ') }}</p>
+            <p>Total Score: {{ totalScore }}</p>
         </div>
         <button @click="togglePreview">{{ isPlaying ? 'Stop' : 'Preview' }}</button>
     </div>
 </template>
+  
   
 <script>
 export default {
@@ -23,48 +25,77 @@ export default {
     },
     data() {
         return {
-            guess: '',
+            songGuess: '',
+            artistGuess: '',
             error: null,
-            isCorrect: false,
+            songCorrect: false,
+            artistCorrect: false,
+            totalScore: 0,
             audio: null,
-            isPlaying: false
+            isPlaying: false,
         };
     },
     methods: {
         togglePreview() {
-            if (!this.audio) {
-                this.audio = new Audio(this.track.preview_url);
-                this.audio.addEventListener('ended', () => {
-                    this.isPlaying = false;
-                });
-            }
-
-            if (this.isPlaying) {
+            if (this.audio) {
                 this.audio.pause();
-            } else {
-                this.audio.play();
+                this.audio = null;
             }
 
-            this.isPlaying = !this.isPlaying;
+            this.audio = new Audio(this.track.preview_url);
+            this.audio.addEventListener('ended', () => {
+                this.isPlaying = false;
+                this.resetGame();
+            });
+
+            this.audio.play();
+            this.isPlaying = true;
         },
-        checkGuess() {
-            const guessTitleAndArtist = this.guess.toLowerCase();
-            const correctTitleAndArtist = `${this.track.name.toLowerCase()} ${this.track.artists.map(artist => artist.name.toLowerCase()).join(' ')}`;
+        checkGuess(type) {
+            if (type === 'song') {
+                const guess = this.songGuess.toLowerCase();
+                const correctTitle = this.track.name.toLowerCase();
 
-            if (guessTitleAndArtist === correctTitleAndArtist) {
-                this.isCorrect = true;
-                this.error = null;
-            } else {
-                this.error = 'Incorrect! Please try again.';
+                if (correctTitle === guess && !this.songCorrect) {
+                    this.songCorrect = true;
+                    this.error = null;
+                    this.totalScore += 1;
+                } else {
+                    this.error = 'Incorrect song name! Please try again.';
+                }
+            } else if (type === 'artist') {
+                const guess = this.artistGuess.toLowerCase();
+                const correctArtists = this.track.artists.map(artist => artist.name.toLowerCase());
+
+                if (correctArtists.some(artist => artist === guess) && !this.artistCorrect) {
+                    this.artistCorrect = true;
+                    this.error = null;
+                    this.totalScore += 1;
+                } else {
+                    this.error = 'Incorrect artist name! Please try again.';
+                }
             }
-        }
+
+            if (this.songCorrect && this.artistCorrect && this.totalScore < 3) {
+                this.totalScore += 1;
+            }
+        },
+        resetGame() {
+            if (this.audio) {
+                this.audio.removeEventListener('ended', this.resetGame);
+                this.audio = null;
+            }
+
+            this.songGuess = '';
+            this.artistGuess = '';
+            this.error = null;
+            this.songCorrect = false;
+            this.artistCorrect = false;
+            this.totalScore = 0;
+            this.isPlaying = false;
+            this.$emit('nextTrack');
+        },
     },
-    beforeUnmount() {
-        if (this.audio) {
-            this.audio.pause();
-            this.audio = null;
-        }
-    }
 }
 </script>
   
@@ -74,13 +105,6 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
-}
-
-.track-guess-item img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    margin-right: 1rem;
 }
 
 .error {
