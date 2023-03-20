@@ -14,6 +14,12 @@
 
         <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
     </div>
+    <div class="countdown-progress">
+        <div class="countdown">{{ countdown }}</div>
+        <div class="progress-bar">
+            <div class="progress" :style="{ width: progress + '%' }"></div>
+        </div>
+    </div>
 </template>
   
   
@@ -33,9 +39,39 @@ export default {
             audio: null,
             isPlaying: false,
             resetInProgress: false,
+            countdown: 10,
+            progress: 0,
+            previewTimeout: null,
+            countdownInterval: null,
+            progressInterval: null,
         };
     },
     methods: {
+        startCountdown() {
+            this.countdown = 10;
+            this.countdownInterval = setInterval(() => {
+                this.countdown -= 1;
+                if (this.countdown <= 0) {
+                    clearInterval(this.countdownInterval);
+                }
+            }, 1000);
+        },
+
+        startProgressBar() {
+            this.progress = 0;
+            this.progressInterval = setInterval(() => {
+                this.progress += 10;
+                if (this.progress >= 100) {
+                    clearInterval(this.progressInterval);
+                }
+            }, 1000);
+        },
+
+        resetCountdown() {
+            clearInterval(this.countdownInterval);
+            clearInterval(this.progressInterval);
+        },
+
         togglePreview() {
             if (!this.audio) {
                 this.audio = new Audio(this.track.preview_url);
@@ -48,8 +84,20 @@ export default {
 
             if (this.isPlaying) {
                 this.audio.pause();
+                clearTimeout(this.previewTimeout);
+                this.resetCountdown();
             } else {
                 this.audio.play();
+                this.startCountdown();
+                this.startProgressBar();
+                this.previewTimeout = setTimeout(() => {
+                    this.audio.pause();
+                    this.audio.currentTime = 0;
+                    this.isPlaying = false;
+                    this.resetCountdown();
+                    this.resetGame();
+                    this.$emit('decrementTotalSongs');
+                }, 10000); // 10 seconds
             }
 
             this.isPlaying = !this.isPlaying;
@@ -146,6 +194,30 @@ export default {
 .error {
     color: red;
     margin-top: 1rem;
+}
+
+.countdown-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.countdown {
+    font-size: 1.5rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+}
+
+.progress {
+    height: 10px;
+    background-color: #3f51b5;
+    border-radius: 3px;
 }
 </style>
   
