@@ -6,7 +6,7 @@
         <p v-if="!track">Please load a playlist first.</p>
         <div v-else>
             <track-guess-item :track="track" @nextTrack="nextTrack" @updateScore="updateScore"
-                @decrementTotalSongs="decrementTotalSongs" />
+                @decrementTotalSongs="decrementTotalSongs" @addToHistory="addToHistory" />
         </div>
     </div>
 </template>
@@ -41,6 +41,9 @@ export default {
         },
         updateScore(score) {
             this.totalScore += score;
+        },
+        addToHistory() {
+            this.$store.dispatch("addToHistory");
         },
     },
     data() {

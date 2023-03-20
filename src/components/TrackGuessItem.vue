@@ -13,7 +13,6 @@
         </div>
 
         <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
-        <button @click="skipTrack">Skip</button>
     </div>
 </template>
   
@@ -33,6 +32,7 @@ export default {
             totalScore: 0,
             audio: null,
             isPlaying: false,
+            resetInProgress: false,
         };
     },
     methods: {
@@ -42,7 +42,7 @@ export default {
                 this.audio.addEventListener('ended', () => {
                     this.isPlaying = false;
                     this.resetGame();
-                    this.$emit('decrementTotalSongs'); // Add this line
+                    this.$emit('decrementTotalSongs');
                 });
             }
 
@@ -109,20 +109,12 @@ export default {
             this.combinedGuess = '';
         },
 
-
-
-
-        skipTrack() {
-            if (this.audio) {
-                this.audio.pause();
-                this.audio.currentTime = 0;
-                this.isPlaying = false;
-            }
-            this.resetGame();
-            this.$emit('decrementTotalSongs');
-        },
-
         resetGame() {
+            if (this.resetInProgress) {
+                return;
+            }
+            this.resetInProgress = true;
+
             if (this.audio) {
                 this.audio.removeEventListener('ended', this.resetGame);
                 this.audio = null;
@@ -134,8 +126,12 @@ export default {
             this.totalScore = 0;
             this.isPlaying = false;
             this.$emit('nextTrack');
+
+            setTimeout(() => {
+                this.resetInProgress = false;
+            }, 100);
         },
-    },
+    }
 }
 </script>
   

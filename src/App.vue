@@ -27,7 +27,7 @@ export default {
     created() {
         this.$store.subscribe((mutation, state) => {
             if (mutation.type === "ADD_TO_HISTORY") {
-                const track = state.tracks[state.currentTrackIndex - 1];
+                const track = state.tracks[state.currentTrackIndex];
                 if (track) {
                     const song = `${track.name} - ${track.artists
                         .map((artist) => artist.name)
