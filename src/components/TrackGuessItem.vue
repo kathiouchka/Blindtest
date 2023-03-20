@@ -2,15 +2,16 @@
 <template>
     <div class="track-guess-item">
         <!-- Other elements... -->
-        <div v-if="!songCorrect && !artistCorrect">
-            <input v-model="songGuess" placeholder="Enter song title" @keyup.enter="checkGuess('song')" />
-            <input v-model="artistGuess" placeholder="Enter artist name" @keyup.enter="checkGuess('artist')" />
+        <div v-if="!(songCorrect && artistCorrect)">
+            <input v-model="combinedGuess" placeholder="Enter song title and/or artist name" @keyup.enter="checkGuess" />
             <p class="error" v-if="error">{{ error }}</p>
         </div>
-        <div v-else>
-            <h3>{{ track.name }}</h3>
-            <p>{{ track.artists.map(artist => artist.name).join(', ') }}</p>
+        <div>
+            <h3 v-if="songCorrect && artistCorrect">{{ track.name }}</h3>
+            <p v-if="songCorrect && artistCorrect">{{ track.artists.map(artist => artist.name).join(', ') }}</p>
+            <img v-if="songCorrect && artistCorrect" :src="imageSrc" alt="Album cover" />
         </div>
+
         <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
         <button @click="skipTrack">Skip</button>
     </div>
@@ -22,11 +23,11 @@ export default {
     name: 'TrackGuessItem',
     props: {
         track: Object,
+        imageSrc: String,
     },
     data() {
         return {
-            songGuess: '',
-            artistGuess: '',
+            combinedGuess: '',
             error: null,
             songCorrect: false,
             artistCorrect: false,
@@ -54,41 +55,65 @@ export default {
 
             this.isPlaying = !this.isPlaying;
         },
-        checkGuess(type) {
+        checkGuess() {
             let score = 0;
 
-            if (type === 'song') {
-                const guess = this.songGuess.toLowerCase();
-                const correctTitle = this.track.name.toLowerCase();
+            const correctTitle = this.track.name.toLowerCase();
+            const correctArtists = this.track.artists.map(artist => artist.name.toLowerCase());
 
-                if (correctTitle === guess && !this.songCorrect) {
-                    this.songCorrect = true;
-                    this.error = null;
-                    score += 1;
-                } else {
-                    this.error = 'Incorrect song name! Please try again.';
+            const combinedGuessWords = this.combinedGuess.toLowerCase().trim().split(' ');
+
+            let songGuess = '';
+            let artistGuess = '';
+
+            for (const word of combinedGuessWords) {
+                if (correctTitle.includes(word) && !this.songCorrect) {
+                    songGuess += word + ' ';
                 }
-            } else if (type === 'artist') {
-                const guess = this.artistGuess.toLowerCase();
-                const correctArtists = this.track.artists.map(artist => artist.name.toLowerCase());
-
-                if (correctArtists.some(artist => artist === guess) && !this.artistCorrect) {
-                    this.artistCorrect = true;
-                    this.error = null;
-                    score += 1;
-                } else {
-                    this.error = 'Incorrect artist name! Please try again.';
+                if (correctArtists.some(artist => artist.includes(word)) && !this.artistCorrect) {
+                    artistGuess += word + ' ';
                 }
             }
 
-            if (this.songCorrect && this.artistCorrect && score < 3) {
+            songGuess = songGuess.trim();
+            artistGuess = artistGuess.trim();
+
+            if (correctTitle === songGuess && !this.songCorrect) {
+                this.songCorrect = true;
                 score += 1;
+            }
+
+            if (correctArtists.some(artist => artist === artistGuess) && !this.artistCorrect) {
+                this.artistCorrect = true;
+                score += 1;
+            }
+
+            if (this.songCorrect && this.artistCorrect) {
+                score += 1; // bonus point
+                this.togglePreview(); // Stop the preview
+                setTimeout(() => {
+                    this.resetGame(); // Move to the next song
+                    this.$emit('decrementTotalSongs');
+                }, 5000);
+            } else {
+                if (score === 0) {
+                    this.error = 'Incorrect song name or artist! Please try again.';
+                } else {
+                    this.error = null;
+                }
             }
 
             if (score > 0) {
                 this.$emit('updateScore', score);
             }
+
+            // Reset combinedGuess for the next attempt
+            this.combinedGuess = '';
         },
+
+
+
+
         skipTrack() {
             if (this.audio) {
                 this.audio.pause();
@@ -105,8 +130,6 @@ export default {
                 this.audio = null;
             }
 
-            this.songGuess = '';
-            this.artistGuess = '';
             this.error = null;
             this.songCorrect = false;
             this.artistCorrect = false;
