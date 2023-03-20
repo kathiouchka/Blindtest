@@ -1,12 +1,18 @@
 <template>
     <div class="guess-game">
         <h1>Guess the Song</h1>
+        <p>Total Score: {{ totalScore }}</p>
+        <p>Number of songs in the playlist: {{ numberOfSongs }}</p>
         <p v-if="!track">Please load a playlist first.</p>
         <div v-else>
-            <track-guess-item :track="track" @nextTrack="nextTrack" />
+            <track-guess-item :track="track" @nextTrack="nextTrack" @updateScore="updateScore"
+                @decrementTotalSongs="decrementTotalSongs" />
         </div>
     </div>
 </template>
+
+  
+  
   
   
 <script>
@@ -17,18 +23,30 @@ export default {
     components: {
         TrackGuessItem
     },
+    computed: {
+        track() {
+            return this.$store.state.tracks[this.$store.state.currentTrackIndex];
+        },
+        numberOfSongs() {
+            return this.$store.state.numberOfSongs;
+        },
+    },
     methods: {
         nextTrack() {
             this.$store.commit('nextTrack');
         },
+        decrementTotalSongs() {
+            this.$store.commit('DECREMENT_TOTAL_SONGS');
+        },
+        updateScore(score) {
+            this.totalScore += score;
+        },
     },
-    computed: {
-        track() {
-            // const index = Math.floor(Math.random() * this.$store.state.tracks.length);
-            // return this.$store.state.tracks[index];
-            return this.$store.state.tracks[this.$store.state.currentTrackIndex];
-        }
-    }
+    data() {
+        return {
+            totalScore: 0,
+        };
+    },
 };
 </script>
   

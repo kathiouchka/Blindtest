@@ -55,6 +55,7 @@ export default {
                 const data = await response.json();
                 this.tracks = data.items.map(item => item.track);
                 this.$store.commit('setTracks', this.tracks); // Commit the tracks to the Vuex store
+                this.$store.commit('SET_NUMBER_OF_SONGS', this.tracks.length); // Add this line
 
                 // Store the last playlist ID
                 localStorage.setItem('last_playlist_id', id);

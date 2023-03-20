@@ -10,9 +10,9 @@
         <div v-else>
             <h3>{{ track.name }}</h3>
             <p>{{ track.artists.map(artist => artist.name).join(', ') }}</p>
-            <p>Total Score: {{ totalScore }}</p>
         </div>
-        <button @click="togglePreview">{{ isPlaying ? 'Stop' : 'Preview' }}</button>
+        <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
+        <button @click="skipTrack">Skip</button>
     </div>
 </template>
   
@@ -21,7 +21,7 @@
 export default {
     name: 'TrackGuessItem',
     props: {
-        track: Object
+        track: Object,
     },
     data() {
         return {
@@ -37,21 +37,26 @@ export default {
     },
     methods: {
         togglePreview() {
-            if (this.audio) {
-                this.audio.pause();
-                this.audio = null;
+            if (!this.audio) {
+                this.audio = new Audio(this.track.preview_url);
+                this.audio.addEventListener('ended', () => {
+                    this.isPlaying = false;
+                    this.resetGame();
+                    this.$emit('decrementTotalSongs'); // Add this line
+                });
             }
 
-            this.audio = new Audio(this.track.preview_url);
-            this.audio.addEventListener('ended', () => {
-                this.isPlaying = false;
-                this.resetGame();
-            });
+            if (this.isPlaying) {
+                this.audio.pause();
+            } else {
+                this.audio.play();
+            }
 
-            this.audio.play();
-            this.isPlaying = true;
+            this.isPlaying = !this.isPlaying;
         },
         checkGuess(type) {
+            let score = 0;
+
             if (type === 'song') {
                 const guess = this.songGuess.toLowerCase();
                 const correctTitle = this.track.name.toLowerCase();
@@ -59,7 +64,7 @@ export default {
                 if (correctTitle === guess && !this.songCorrect) {
                     this.songCorrect = true;
                     this.error = null;
-                    this.totalScore += 1;
+                    score += 1;
                 } else {
                     this.error = 'Incorrect song name! Please try again.';
                 }
@@ -70,16 +75,30 @@ export default {
                 if (correctArtists.some(artist => artist === guess) && !this.artistCorrect) {
                     this.artistCorrect = true;
                     this.error = null;
-                    this.totalScore += 1;
+                    score += 1;
                 } else {
                     this.error = 'Incorrect artist name! Please try again.';
                 }
             }
 
-            if (this.songCorrect && this.artistCorrect && this.totalScore < 3) {
-                this.totalScore += 1;
+            if (this.songCorrect && this.artistCorrect && score < 3) {
+                score += 1;
+            }
+
+            if (score > 0) {
+                this.$emit('updateScore', score);
             }
         },
+        skipTrack() {
+            if (this.audio) {
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                this.isPlaying = false;
+            }
+            this.resetGame();
+            this.$emit('decrementTotalSongs');
+        },
+
         resetGame() {
             if (this.audio) {
                 this.audio.removeEventListener('ended', this.resetGame);
