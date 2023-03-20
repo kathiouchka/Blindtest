@@ -2,7 +2,6 @@
 <template>
     <div class="track-guess-item-wrapper">
         <div class="track-guess-item">
-            <!-- Other elements... -->
             <div v-if="!(songCorrect && artistCorrect)">
                 <input v-model="combinedGuess" placeholder="Enter song title and/or artist name"
                     @keyup.enter="checkGuess" />
@@ -157,9 +156,15 @@ export default {
                 }, 5000);
             } else {
                 if (score === 0) {
-                    this.error = 'Incorrect song name or artist! Please try again.';
+                    this.error = 'Incorrect song name and artist! Please try again.';
                 } else {
-                    this.error = null;
+                    if (this.songCorrect) {
+                        this.error = 'Correct song name! Please enter the artist name.';
+                    } else if (this.artistCorrect) {
+                        this.error = 'Correct artist! Please enter the song name.';
+                    } else {
+                        this.error = null;
+                    }
                 }
             }
 

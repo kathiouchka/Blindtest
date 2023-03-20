@@ -14,11 +14,8 @@
 </template>
   
 <script>
-
 export default {
     name: "PlaylistView",
-    components: {
-    },
     data() {
         return {
             playlistId: localStorage.getItem("last_playlist_id") || "",
