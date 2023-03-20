@@ -33,6 +33,7 @@ export default {
     },
     methods: {
         nextTrack() {
+            this.$store.dispatch("addToHistory");
             this.$store.commit('nextTrack');
         },
         decrementTotalSongs() {

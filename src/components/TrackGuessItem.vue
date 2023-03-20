@@ -9,7 +9,7 @@
         <div>
             <h3 v-if="songCorrect && artistCorrect">{{ track.name }}</h3>
             <p v-if="songCorrect && artistCorrect">{{ track.artists.map(artist => artist.name).join(', ') }}</p>
-            <img v-if="songCorrect && artistCorrect" :src="imageSrc" alt="Album cover" />
+            <img v-if="songCorrect && artistCorrect" :src="track.album.images[0].url" alt="Album cover" />
         </div>
 
         <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
@@ -23,7 +23,6 @@ export default {
     name: 'TrackGuessItem',
     props: {
         track: Object,
-        imageSrc: String,
     },
     data() {
         return {
@@ -89,10 +88,10 @@ export default {
             }
 
             if (this.songCorrect && this.artistCorrect) {
-                score += 1; // bonus point
-                this.togglePreview(); // Stop the preview
-                setTimeout(() => {
-                    this.resetGame(); // Move to the next song
+                score += 1;
+                this.togglePreview();
+                setTimeout(async () => {
+                    this.resetGame();
                     this.$emit('decrementTotalSongs');
                 }, 5000);
             } else {
@@ -107,7 +106,6 @@ export default {
                 this.$emit('updateScore', score);
             }
 
-            // Reset combinedGuess for the next attempt
             this.combinedGuess = '';
         },
 

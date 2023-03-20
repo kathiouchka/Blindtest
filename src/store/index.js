@@ -3,13 +3,19 @@ import { createStore } from 'vuex';
 export default createStore({
     state: {
         accessToken: null,
-        tracks: null, // Add this state property for tracks
+        tracks: null,
         currentTrackIndex: 0,
         numberOfSongs: 0,
+        tracksHistory: [], // Add this state property for tracksHistory
     },
     mutations: {
         setAccessToken(state, accessToken) {
             state.accessToken = accessToken;
+        },
+        ADD_TO_HISTORY(state) {
+            if (state.currentTrackIndex > 0) {
+                state.tracksHistory.push(state.tracks[state.currentTrackIndex - 1]);
+            }
         },
         setTracks(state, tracks) {
             state.tracks = tracks;
@@ -24,6 +30,10 @@ export default createStore({
             state.numberOfSongs--;
         },
     },
-    actions: {},
+    actions: {
+        addToHistory({ commit }) {
+            commit("ADD_TO_HISTORY");
+        },
+    },
     modules: {},
 });
