@@ -22,8 +22,14 @@ export default {
     },
     mounted() {
         const accessToken = localStorage.getItem('spotify_access_token');
-        if (accessToken) {
+        const tokenExpiration = localStorage.getItem('spotify_access_token_expiration');
+
+        if (accessToken && tokenExpiration && new Date(tokenExpiration) > new Date()) {
             this.$router.push('/playlist');
+        } else {
+            // Clear the expired token if it exists
+            localStorage.removeItem('spotify_access_token');
+            localStorage.removeItem('spotify_access_token_expiration');
         }
     }
 }

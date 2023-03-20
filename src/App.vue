@@ -45,49 +45,43 @@ export default {
     
 <style>
 body {
-    background-color: #927272;
-    color: #f0f0f0;
+    background-color: #f5f5f5;
+    color: #333;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
 }
 
-input {
-    background-color: #771a1a;
-    border: 1px solid #444;
-    border-radius: 4px;
-    color: #f0f0f0;
-    padding: 6px 12px;
-    margin: 0 4px;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-button {
-    background-color: #4a4a4a;
-    border: 1px solid #444;
-    border-radius: 4px;
-    color: #f0f0f0;
-    cursor: pointer;
-    padding: 6px 12px;
-    margin: 0 4px;
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    flex-direction: column;
 }
 
-button:hover {
-    background-color: #5a5a5a;
+.home-link,
+.game-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #3f51b5;
+    margin: 0 8px;
+    transition: color 0.3s;
 }
 
-button:active {
-    background-color: #3a3a3a;
+.home-link:hover,
+.game-link:hover {
+    color: #5c6bc0;
 }
 
 h1,
 h3,
 p {
     margin: 0.5rem 0;
-}
-
-.guess-game {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2rem;
 }
 
 .past-songs {
@@ -97,6 +91,10 @@ p {
     margin: 20px;
     max-height: 70vh;
     overflow-y: auto;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .past-songs h2 {
@@ -112,3 +110,4 @@ p {
     margin-bottom: 5px;
 }
 </style>
+

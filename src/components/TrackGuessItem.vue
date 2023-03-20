@@ -1,31 +1,36 @@
 <!-- src/components/TrackGuessItem.vue -->
 <template>
-    <div class="track-guess-item">
-        <!-- Other elements... -->
-        <div v-if="!(songCorrect && artistCorrect)">
-            <input v-model="combinedGuess" placeholder="Enter song title and/or artist name" @keyup.enter="checkGuess" />
-            <p class="error" v-if="error">{{ error }}</p>
-        </div>
-        <div>
-            <h3 v-if="songCorrect && artistCorrect">{{ track.name }}</h3>
-            <p v-if="songCorrect && artistCorrect">{{ track.artists.map(artist => artist.name).join(', ') }}</p>
-            <img v-if="songCorrect && artistCorrect" :src="track.album.images[0].url" alt="Album cover" />
-        </div>
+    <div class="track-guess-item-wrapper">
+        <div class="track-guess-item">
+            <!-- Other elements... -->
+            <div v-if="!(songCorrect && artistCorrect)">
+                <input v-model="combinedGuess" placeholder="Enter song title and/or artist name"
+                    @keyup.enter="checkGuess" />
+                <p class="error" v-if="error">{{ error }}</p>
+            </div>
+            <div>
+                <h3 v-if="songCorrect && artistCorrect">{{ track.name }}</h3>
+                <p v-if="songCorrect && artistCorrect">{{ track.artists.map(artist => artist.name).join(', ') }}</p>
+                <img v-if="songCorrect && artistCorrect" :src="track.album.images[0].url" alt="Album cover" />
+            </div>
 
-        <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
-    </div>
-    <div class="countdown-progress">
-        <div class="countdown">{{ countdown }}</div>
-        <div class="progress-bar">
-            <div class="progress" :style="{ width: progress + '%' }"></div>
+            <button @click="togglePreview">{{ isPlaying ? 'Pause' : 'Preview' }}</button>
+        </div>
+        <div class="countdown-progress">
+            <div class="countdown">{{ countdown }}</div>
+            <div class="progress-bar">
+                <div class="progress" :style="{ width: progress + '%' }"></div>
+            </div>
         </div>
     </div>
 </template>
   
   
+  
 <script>
 export default {
     name: 'TrackGuessItem',
+    emits: ['nextTrack', 'updateScore', 'decrementTotalSongs', 'addToHistory'],
     props: {
         track: Object,
     },
@@ -49,22 +54,30 @@ export default {
     methods: {
         startCountdown() {
             this.countdown = 10;
-            this.countdownInterval = setInterval(() => {
+            const updateCountdown = () => {
                 this.countdown -= 1;
-                if (this.countdown <= 0) {
-                    clearInterval(this.countdownInterval);
+                if (this.countdown >= 0) {
+                    setTimeout(updateCountdown, 1000);
                 }
-            }, 1000);
+                else {
+                    this.countdown = 0;
+                }
+            };
+            setTimeout(updateCountdown, 1000);
         },
 
         startProgressBar() {
             this.progress = 0;
-            this.progressInterval = setInterval(() => {
+            const updateProgress = () => {
                 this.progress += 10;
-                if (this.progress >= 100) {
-                    clearInterval(this.progressInterval);
+                if (this.progress <= 100) {
+                    setTimeout(updateProgress, 1000);
                 }
-            }, 1000);
+                else {
+                    this.progress = 100
+                }
+            };
+            setTimeout(updateProgress, 1000);
         },
 
         resetCountdown() {
@@ -184,16 +197,39 @@ export default {
 </script>
   
 <style scoped>
-/* Add your CSS styles for the track guess item component */
 .track-guess-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
     margin-bottom: 1rem;
+    width: 100%;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.error {
-    color: red;
+.track-guess-item input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.track-guess-item button {
     margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #3f51b5;
+    color: white;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.track-guess-item button:hover {
+    background-color: #5c6bc0;
 }
 
 .countdown-progress {
@@ -220,4 +256,5 @@ export default {
     border-radius: 3px;
 }
 </style>
+
   

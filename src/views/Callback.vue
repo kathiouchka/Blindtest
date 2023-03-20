@@ -13,7 +13,11 @@ export default {
         const hash = window.location.hash.substr(1);
         const params = new URLSearchParams(hash);
         const accessToken = params.get('access_token');
-        const expiresIn = params.get('expires_in');
+        const expiresIn = Number(new URLSearchParams(window.location.hash.substring(1)).get('expires_in'));
+        const expirationDate = new Date();
+
+        expirationDate.setSeconds(expirationDate.getSeconds() + expiresIn);
+        localStorage.setItem('spotify_access_token_expiration', expirationDate.toString());
 
         if (accessToken) {
             // Store the access token in a Vuex store, Vue component, or localStorage
